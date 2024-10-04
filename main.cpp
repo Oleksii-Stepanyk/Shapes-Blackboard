@@ -1,7 +1,8 @@
-#include <iostream>
+#include "UIKernel.h"
 
 int main()
 {
-    std::cout << "Hello, World!" << std::endl;
+    UIKernel kernel;
+    kernel.startProgram();
     return 0;
 }
