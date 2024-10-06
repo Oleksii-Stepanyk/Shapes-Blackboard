@@ -12,6 +12,6 @@ public:
     ~UIKernel() = default;
     void startProgram();
     void parseCommand(const std::string&);
-    void loadFile();
-    void saveFile();
+    void loadFile(const std::string&);
+    void saveFile(const std::string&);
 };

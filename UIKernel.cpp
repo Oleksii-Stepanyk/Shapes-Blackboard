@@ -18,10 +18,10 @@ std::vector<std::string> split(const std::string& str, const char& delimiter)
 
 UIKernel::UIKernel()
 {
-    std::cout << "Enter the height and width of the board: ";
+    std::cout << "Enter the width and height of the board: ";
     int height, width;
-    std::cin >> height >> width;
-    board = std::make_unique<BlackBoard>(height, width);
+    std::cin >> width >> height;
+    board = std::make_unique<BlackBoard>(width, height);
 }
 
 void UIKernel::startProgram()
@@ -68,13 +68,13 @@ void UIKernel::parseCommand(const std::string& input)
     {
         board->clear();
     }
-    else if (args[0] == "save")
+    else if (args[0] == "save" && args.size() == 2)
     {
-        saveFile();
+        saveFile(args[1]);
     }
-    else if (args[0] == "load")
+    else if (args[0] == "load" && args.size() == 2)
     {
-        loadFile();
+        loadFile(args[1]);
     }
     else if (args[0] == "exit")
     {
@@ -86,13 +86,9 @@ void UIKernel::parseCommand(const std::string& input)
     }
 }
 
-void UIKernel::loadFile()
+void UIKernel::loadFile(const std::string& path)
 {
-    std::string filename;
-    std::cout << "Enter the filename: ";
-    std::cin >> filename;
-
-    const FileHandler file(filename, "r");
+    const FileHandler file(path, "r");
     if (!file.isOpen())
     {
         std::cout << "Error: File not found.\n";
@@ -112,21 +108,22 @@ void UIKernel::loadFile()
         std::cout << "Error: Invalid file format.\n";
         return;
     }
-
     lines.erase(lines.begin());
+
+    const auto boardSize = split(lines[0], ' ');
+    board.reset();
+    board = std::make_unique<BlackBoard>(std::stoi(boardSize[0]), std::stoi(boardSize[1]));
+    lines.erase(lines.begin());
+
     for (const std::string& line : lines)
     {
         parseCommand(line);
     }
 }
 
-void UIKernel::saveFile()
+void UIKernel::saveFile(const std::string& path)
 {
-    std::string filename;
-    std::cout << "Enter the filename: ";
-    std::cin >> filename;
-
-    const FileHandler file(filename, "w");
+    const FileHandler file(path, "w");
     if (!file.isOpen())
     {
         std::cout << "Error: File not found.\n";
@@ -134,8 +131,20 @@ void UIKernel::saveFile()
     }
 
     file.writeData("board version 1.0\n");
-    for (const std::string& shapeCommand : board->_getShapes())
+    file.writeData(board->getWidth() + ' ' + board->getHeight() + '\n');
+
+    auto shapes = board->_getShapes();
+    int shapesCount = 0;
+    for (const std::string& shapeCommand : shapes)
     {
-        file.writeData(shapeCommand + '\n');
+        if (shapesCount != shapes.size() - 1)
+        {
+            file.writeData(shapeCommand + '\n');
+            ++shapesCount;
+        }
+        else
+        {
+            file.writeData(shapeCommand);
+        }
     }
 }
