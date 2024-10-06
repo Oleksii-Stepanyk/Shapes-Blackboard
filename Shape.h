@@ -46,3 +46,14 @@ public:
     Triangle(int, int, int, int);
     int getHeight() const;
 };
+
+class Line final : public Shape
+{
+    int x2;
+    int y2;
+
+public:
+    Line(int, int, int, int, int);
+    int getX2() const;
+    int getY2() const;
+};

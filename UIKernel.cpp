@@ -15,6 +15,15 @@ std::vector<std::string> split(const std::string& str, const char& delimiter)
     return result;
 }
 
+std::string to_lower(const std::string& str)
+{
+    std::string result = str;
+    for (char& c : result)
+    {
+        c += 32 * (c >= 'A' && c <= 'Z');
+    }
+    return result;
+}
 
 UIKernel::UIKernel()
 {
@@ -28,15 +37,16 @@ void UIKernel::startProgram()
 {
     std::string input;
     std::cin.ignore();
-    while (input != "exit")
+    while (to_lower(input) != "exit")
     {
+        bool isOkay = true;
         std::cout << "Enter command: ";
         getline(std::cin, input);
-        parseCommand(input);
+        parseCommand(to_lower(input), isOkay);
     }
 }
 
-void UIKernel::parseCommand(const std::string& input)
+void UIKernel::parseCommand(const std::string& input, bool& isOkay)
 {
     std::vector<std::string> args = split(input, ' ');
     if (args.empty())
@@ -83,6 +93,7 @@ void UIKernel::parseCommand(const std::string& input)
     else
     {
         std::cout << "Invalid command. Please try again.\n";
+        isOkay = false;
     }
 }
 
@@ -117,7 +128,13 @@ void UIKernel::loadFile(const std::string& path)
 
     for (const std::string& line : lines)
     {
-        parseCommand(line);
+        bool isOkay = true;
+        parseCommand(line, isOkay);
+        if (!isOkay)
+        {
+            std::cout << "Error: Invalid command in file.\n";
+            return;
+        }
     }
 }
 

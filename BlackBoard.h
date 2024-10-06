@@ -17,6 +17,7 @@ class BlackBoard
     void drawCircle(int, int, int);
     void drawRectangle(int, int, int, int);
     void drawTriangle(int, int, int);
+    void drawLine(int, int, int, int);
 
 public:
     BlackBoard(int, int);

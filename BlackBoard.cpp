@@ -70,7 +70,8 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
         const int radius = std::stoi(parameters[1]);
         const int x = std::stoi(parameters[2]);
         const int y = std::stoi(parameters[3]);
-        if (x + radius < 0 || x - radius > boardWidth || y + radius < 0 || y - radius > boardHeight || radius <= 0 || radius * 2 > boardWidth)
+        if (x + radius < 0 || x - radius > boardWidth || y + radius < 0 || y - radius > boardHeight || radius <= 0 ||
+            radius * 2 > boardWidth)
         {
             std::cout << "Circle is completely out of bounds\n";
             return;
@@ -88,8 +89,8 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
         }
         auto* circle = new Circle(shapes.size() + 1, radius, x, y);
         shapes.push_back(circle);
-        drawCircle(radius, x, y);
         previousGrid = grid;
+        drawCircle(radius, x, y);
         canUndo = true;
     }
     else if (parameters[0] == "rectangle" && parameters.size() == 5)
@@ -118,8 +119,8 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
         }
         auto* rectangle = new Rectangle(shapes.size() + 1, width, height, x, y);
         shapes.push_back(rectangle);
-        drawRectangle(width, height, x, y);
         previousGrid = grid;
+        drawRectangle(width, height, x, y);
         canUndo = true;
     }
     else if (parameters[0] == "triangle" && parameters.size() == 4)
@@ -127,7 +128,8 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
         const int height = std::stoi(parameters[1]);
         const int x = std::stoi(parameters[2]);
         const int y = std::stoi(parameters[3]);
-        if (x + height < 0 || y + height < 0 || x > boardWidth || y > boardHeight || height <= 1 || height > boardHeight)
+        if (x + height < 0 || y + height < 0 || x > boardWidth || y > boardHeight || height <= 1 || height >
+            boardHeight)
         {
             std::cout << "Triangle is completely out of bounds\n";
             return;
@@ -145,7 +147,37 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
         }
         auto* triangle = new Triangle(shapes.size() + 1, height, x, y);
         shapes.push_back(triangle);
+        previousGrid = grid;
         drawTriangle(height, x, y);
+        canUndo = true;
+    }
+    else if (parameters[0] == "line" && parameters.size() == 5)
+    {
+        const int x = std::stoi(parameters[1]);
+        const int y = std::stoi(parameters[2]);
+        const int x2 = std::stoi(parameters[3]);
+        const int y2 = std::stoi(parameters[4]);
+        if (((x < 0 || y < 0) && (x2 < 0 || y2 < 0)) ||
+            ((x >= boardWidth || y >= boardHeight) && (x2 >= boardWidth || y2 >= boardHeight)))
+        {
+            std::cout << "Line is completely out of bounds\n";
+            return;
+        }
+        for (auto shape : shapes)
+        {
+            if (const auto* currentShape = dynamic_cast<Line*>(shape); currentShape != nullptr)
+            {
+                if (currentShape->getX() == x && currentShape->getY() == y && currentShape->getX2() == x2 &&
+                    currentShape->getY2() == y2)
+                {
+                    std::cout << "Line is overlapping with another line\n";
+                    return;
+                }
+            }
+        }
+        auto* triangle = new Line(shapes.size() + 1, x, y, x2, y2);
+        shapes.push_back(triangle);
+        drawLine(x, y, x2, y2);
         previousGrid = grid;
         canUndo = true;
     }
@@ -176,7 +208,7 @@ void BlackBoard::undo()
 
 void BlackBoard::clear()
 {
-    grid = std::vector(grid.size(), std::vector(grid[0].size(), ' '));
+    grid = std::vector(boardHeight, std::vector(boardWidth, ' '));
     previousGrid.clear();
     canUndo = false;
     for (const auto shape : shapes)
@@ -207,6 +239,12 @@ std::vector<std::string> BlackBoard::_getShapes()
         {
             command += "add triangle " + std::to_string(currentShape->getHeight()) + ' '
                 + std::to_string(currentShape->getX()) + ' ' + std::to_string(currentShape->getY());
+        }
+        else if (auto* currentShape = dynamic_cast<Line*>(shape))
+        {
+            command += "add line " + std::to_string(currentShape->getX()) + ' ' + std::to_string(currentShape->getY()) +
+                ' '
+                + std::to_string(currentShape->getX2()) + ' ' + std::to_string(currentShape->getY2());
         }
         shapeCommands.push_back(command);
         command.clear();
@@ -262,24 +300,54 @@ void BlackBoard::drawRectangle(int width, int height, int x, int y)
 
 void BlackBoard::drawTriangle(int height, int x, int y)
 {
-    for (int i = 0; i < height; ++i) {
+    for (int i = 0; i < height; ++i)
+    {
         int leftMost = x - i;
         int rightMost = x + i;
         int posY = y + i;
-        if (posY < boardHeight) {
+        if (posY < boardHeight)
+        {
             if (leftMost >= 0 && leftMost < boardWidth)
-                 grid[y + i][x - i] = '*';
+                grid[y + i][x - i] = '*';
             if (rightMost >= 0 && rightMost < boardWidth && leftMost != rightMost)
-                    grid[y + i][x + i] = '*';
+                grid[y + i][x + i] = '*';
         }
     }
-    for (int j = 0; j < 2 * height - 1; ++j) {
+    for (int j = 0; j < 2 * height - 1; ++j)
+    {
         int baseX = x - height + 1 + j;
         int baseY = y + height - 1;
         if (baseX >= 0 && baseX < boardWidth && baseY < boardHeight)
-             grid[baseY][baseX] = '*';
+            grid[baseY][baseX] = '*';
     }
 }
+
+void BlackBoard::drawLine(int x1, int y1, int x2, int y2)
+{
+    int dx = abs(x2 - x1);
+    int dy = abs(y2 - y1);
+    int sx = (x1 < x2) ? 1 : -1;
+    int sy = (y1 < y2) ? 1 : -1;
+
+    int err = dx - dy;
+
+    while (true) {
+        grid[y1][x1] = '*';
+
+        if (x1 == x2 && y1 == y2) break;
+        int e2 = 2 * err;
+
+        if (e2 > -dy) {
+            err -= dy;
+            x1 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
+
 
 std::string BlackBoard::getHeight() const
 {

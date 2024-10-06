@@ -22,3 +22,9 @@ Triangle::Triangle(const int id, const int height, const int x, const int y)
 : Shape(id, "triangle", x, y), height(height) {}
 
 int Triangle::getHeight() const { return height; }
+
+Line::Line(const int id, const int x2, const int y2, const int x, const int y)
+: Shape(id, "line", x, y), x2(x2), y2(y2){}
+
+int Line::getX2() const { return x2; }
+int Line::getY2() const { return y2; }
