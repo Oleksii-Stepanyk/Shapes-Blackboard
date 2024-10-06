@@ -1,16 +1,17 @@
 #pragma once
+#include <memory>
 #include <string>
 #include "BlackBoard.h"
 
 class UIKernel
 {
-    BlackBoard* board;
+    std::unique_ptr<BlackBoard> board;
 
 public:
     UIKernel();
-    ~UIKernel();
+    ~UIKernel() = default;
     void startProgram();
     void parseCommand(const std::string&);
-    void loadFile(const std::string&);
-    void saveFile(const std::string&);
+    void loadFile();
+    void saveFile();
 };

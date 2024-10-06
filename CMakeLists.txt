@@ -12,4 +12,4 @@ add_executable(Shapes_Blackboard main.cpp
         Shape.h
         FileHandler.cpp
         FileHandler.h
-        TextFormat.cpp)
+)
