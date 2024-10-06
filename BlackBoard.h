@@ -4,32 +4,34 @@
 
 class BlackBoard
 {
-    std::string availableShapes[3] = {
-        "circle radius coordinates", "rectangle width height coordinates", "triangle height coordinates"
-    };
-    bool canUndo = false;
-    int boardWidth = 0;
-    int boardHeight = 0;
-    std::vector<Shape*> shapes;
-    std::vector<std::vector<char>> previousGrid;
-    std::vector<std::vector<char>> grid;
+    std::string availableShapes[4] = {
+        "circle radius coordinates", "rectangle width height coordinates",
+        "triangle height coordinates","line coordStart coordEnd" };
 
-    void drawCircle(int, int, int);
-    void drawRectangle(int, int, int, int);
-    void drawTriangle(int, int, int);
-    void drawLine(int, int, int, int);
+bool canUndo = false;
+int boardWidth = 0;
+int boardHeight = 0;
+std::vector<Shape*> shapes;
+std::vector<std::vector<char>> previousGrid;
+std::vector<std::vector<char>> grid;
 
-public:
-    BlackBoard(int, int);
+void drawCircle(int, int, int);
+void drawRectangle(int, int, int, int);
+void drawTriangle(int, int, int);
+void drawLine(int, int, int, int);
 
-    void draw();
-    void list() const;
-    void showShapes();
-    void addShape(std::vector<std::string>& parameters);
-    void undo();
-    void clear();
+public
+:
+BlackBoard(int, int);   
 
-    std::vector<std::string> _getShapes();
-    std::string getHeight() const;
-    std::string getWidth() const;
+void draw();
+void list() const;
+void showShapes();
+void addShape(std::vector<std::string>& parameters);
+void undo();
+void clear();
+
+std::vector<std::string> _getShapes();
+std::string getHeight() const;
+std::string getWidth() const;
 };
